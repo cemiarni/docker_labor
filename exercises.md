@@ -1,4 +1,4 @@
-# Konténer techonlógiák laboratóriom
+# Konténer technológiák laboratórium
 
 ## Docker alapok
 
@@ -133,7 +133,7 @@ Nem csak könyvtárak lehetnek volume-ok, hanem fájlok is.
 Csatoljuk be íras védett módban a /etc/passwd fájlt a /etc/passwd alá,
 és állítsuk konténerben lévő user-t
 *cloud*-ra.
-A konténer indítása előtt és után is, adjuk ki a *whoami* illetve az *id* parancsot.
+A konténer indítása előtt és után is, adjuk ki a `whoami` illetve az `id` parancsot.
 
 ```bash
 whoami
@@ -148,18 +148,19 @@ Ha hibát tapasztalunk, akkor adjuk meg a *cloud* numerikus azonosítóját a ne
 ```bash
 docker run -v /etc/passwd:/etc/passwd:ro --user `id -u` -ti ubuntu
 ```
-Ne felejtsük futtatni a whoami és az id parancsokat.
+Ne felejtsük futtatni a `whoami` és az id parancsokat.
 
 
 ## A konténer nem virtuális gép
 
-A 3.10-es kernelben nem letező funkció.
-Valami random ubuntus program ami ilyet hasznal.
+# TODO: A 3.10-es kernelben nem letező funkció.
+# TODO: Valami random ubuntus program ami ilyet hasznal.
 
 Root image egyetelen statikusan linkelt programmal.
 
 A programkód:
 ```c
+/* static_hello.c */
 #include <stdio.h>
 
 int main(){
@@ -191,7 +192,7 @@ Készítsünk Dockerfile-t, mely egy Nginx-et telepít.
 Oldja meg hogy az összes modosítás csak egyetelen layer létrehozását eredményezze!
 A weboldal tartalma a simple_nginx könyvtárban található.
 
-```
+```dockerfile
 # Nginx
 #
 # VERSION       1.0
@@ -216,4 +217,121 @@ docker build .
 docker tag XXX simple_nginx
 ```
 
+# Biztonság
 
+Ha konténereket kívánunk szolgáltatni az ügyfeleink számára akkor nagy figyelmet kell
+szánunk a biztonsági beállításokra.
+A konténerek a virtuális gépekkel szemben rengeteg sok elsőre nem is triviális biztonsági
+rést rejtenek magukban.
+
+Egy egyszerű demonstráció setuid bittel ellátott program hosztrandeszerre jutattása.
+Készítsünk egy egyszerű c programot reallywhoami néven.
+```c
+/* reallywhoami.c */
+#include<unistd.h>
+#include<stdlib.h>
+
+int main(){
+    setuid(0);
+    system("whoami");
+    return 0;
+}
+```
+Fordítás és futattás:
+```bash
+gcc -o reallywhoami reallywhoami.c
+./reallywhoami
+```
+Jól láthatóan semmi különös. A laborgépek docker démonja úgy lett konfigurálva, hogy
+használja a user namespace-t a konténereknél. Indítsunk egy konténert, csatoljuk be a /data
+alá az aktuális munka könyvtárunkat, az indításkor adjuk meg a `--userns=host` kapcsolót
+a user namespace kikapcsolásához.
+
+A konténeren belül mivel root lesz a user-ünk,
+vegyük birtokba a *reallywhoami* programot és aggasunk rá **setuid** bitet.
+```bash
+docker run --rm --userns=host -v $PWD:/data -ti ubuntu
+cd /data
+chown root  # tulajdonba vétel
+chmod +s root  # setuid bit beállítása
+```
+Nyugottan hagyjuk el a konténert és futassuk újra a *reallywhoami* programot.
+Hajaj. Ugy ugye, a konténeren belüli root a hosztrendszeren is root.
+
+Most toroljuk le bináris és fordítsuk újra a programot. Ha futatjuk, jól látszik, hogy
+ismét helyreállt a rend.
+
+Indítsunk megint egy konténert úgy ahogy az előbb és játszuk el amit az előbb, de
+most ne használjuk a `--userns=host` kapcsolót.
+```bash
+docker run --rm -v $PWD:/data -ti ubuntu
+cd /data
+chown root
+```
+Ajha.
+Nézzük meg a bináris és a /data könyvtár tulajdonosát: `ls -la`.
+Nem ilyedünk meg!
+Lépjünk ki a konténerből.
+Hozzunk létre könyvtárat *build* néven.
+Másoljuk bele a kódot és a binárist.
+A könyvtárnak adjunk 777-es jogot.
+Majd lépjünk is be a könyvtárba.
+```bash
+mkdir build
+cp reallywhoami reallywhoami.c build
+chmod 777 build
+cd build
+```
+Futassuk a konténert az előbbi módon, majd belül másoljuk le a *reallywhoami* programot.
+```bash
+docker run --rm -v $PWD:/data -ti ubuntu
+cd /data
+cp reallywhoami reallywhoami2
+```
+Nézzük meg a reallywhoami2 tulajdonosát.
+Tegyük rá a *setuid* bitet.
+Hagyjuk el a konténert és futtasuk a *reallywhoami2* programot.
+Hát ilyenkor szomorkodnak egy pillanatra a hackerek.
+
+Modosítsuk a c porgramot a következőre.
+```c
+#include<unistd.h>
+#include<stdlib.h>
+
+int main(){
+    setuid(100000);
+    system("whoami");
+    return 0;
+}
+```
+Töröljük a binárisokat fordítsuk újra a programot majd jatszuk el a konténeres trükköt.
+Látszólag nem változott semmi.
+
+Módosítsuk ismét a programot:
+```c
+#include<unistd.h>
+#include<stdlib.h>
+#include<stdio.h>
+
+int main(){
+    setuid(100000);
+    fopen("myfile", "w");
+    return 0;
+}
+```
+Játszuk el megint mint az előbb. A konténerből kilépés után futassuk le *reallywhoami2*-t,
+majd nézzük meg a myfile tulajdonosát.
+
+Igen valóban sikerült egy másik user nevében futatni de ha 100000 feletti user id-kat csak
+a user namespace lekepézéshez használjuk akkor, talán nem lehet vissza élni ezzel.
+
+Mit csinál a user namespace? Mint ahogy az talán már azlőbbieknél is látszott a konténeren
+belüli user id-kat átképzi egy teljesen más user id-ra, a mi esetünkben hozzáad 100000-t.
+Tehát konténeren belüli **X** userid a konténeren kívül a hoszt rendszeren valójában
+a **100000+X** userid. Ez sajnos kihatással van a konténeren belülil műveletekre is
+mint ahogy láttuk nem tudtuk tulajdonba venni a 100000 alatti uid-dal rendelkező
+felhasználó fájljait, annak ellenére hogy a konténeren belül látszolag root-ként
+tevékenykedtünk, szerencsére nem.
+
+
+## Docker API
