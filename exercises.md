@@ -153,10 +153,7 @@ Ne felejtsük futtatni a `whoami` és az id parancsokat.
 
 ## A konténer nem virtuális gép
 
-# TODO: A 3.10-es kernelben nem letező funkció.
-# TODO: Valami random ubuntus program ami ilyet hasznal.
-
-Root image egyetelen statikusan linkelt programmal.
+### Root image egyetelen statikusan linkelt programmal.
 
 A programkód:
 ```c
@@ -184,6 +181,14 @@ Az importálás után megjelenik a letrehozott image azonosítója, ezt felhaszn
 nevezzük át az image-t a `docker tag` parancs segítségével *static_hello*-ra.
 Indítsunk egy static_hello konténert.
 Ne felejtsük el megadni a futattandó program elérési utját!
+
+### Kernel által nem támogatott funkció igénye a konténerben
+Ritka eset de előfordulhat hogy konténerbe olyan szoftver kerül ami olyan
+funkciót vár el a kerneltől amit nem támogat.
+Konténer egyik előnye hogy hoszt rendszertől különböző linux disztribúciót
+is futathatunk a konténberben.
+Sajnos előfordulhat hogy -- a disztribúciók mivel gyakran különböző verziójú és
+konfigurációjú kernelt használnak -- egyes programok nem működnek.
 
 
 ## Dockerfile
