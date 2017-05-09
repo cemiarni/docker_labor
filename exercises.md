@@ -12,8 +12,8 @@ sudo systemctl start docker  # demon inditasa
 Legfontosabb parancs: `docker help`.
 
 Töltsük le és indítsunk egy busybox-os konténert interaktív módban.
-Majd irassuk ki a rendszer informaciókat.
-Ellenőrizzük a konténerben az internet kapcsolattot.
+Majd írassuk ki a rendszer információkat.
+Ellenőrizzük a konténerben az internet kapcsolatot.
 Listáztassuk ki a hálózati eszközöket.
 Nézzük meg a konténer ip címeit.
 Lépjünk ki a konténerből.
@@ -34,7 +34,7 @@ docker ps
 ```
 
 Indítsunk egy busybox konténert a `watch x` paranccsal, detach módban.
-A konténer neve legyen x_watcher.
+A konténer neve legyen *x_watcher*.
 
 ```bash
 docker run --name x_watcher -d busybox watch x
@@ -44,8 +44,8 @@ Jelenítsük meg ismét a futó konténereket.
 Próbáljuk ki a `docker ps -a` parancsot.
 
 
-Készítsünk de még ne futassuk, egy busybox konténert ami folyamatosan pingeli a google dns szerverét.
-Nevezzük `ping_google`-nek.
+Készítsünk, de még ne futassuk, egy busybox konténert ami folyamatosan pingeli a google dns szerverét.
+Nevezzük *ping_google*-nek.
 
 ```bash
 docker create --name ping_google busybox ping 8.8.8.8
@@ -55,12 +55,14 @@ Listáztassuk ki a konténereket a `docker ps -a` parancssal.
 
 Jelenítsük meg a hosztgép hálózati eszközeit.
 
-Vizsgáljuk meg a ping_google konténer beallításait.
+
+Vizsgáljuk meg a *ping_google* konténer beállításait.
 ```bash
 docker inspect ping_google
 ```
+Indítsuk el a ping_google konténert. 
 
-Nézzük meg az x_watcher és a ping_google konténerek logjait.
+Nézzük meg az *x_watcher* és a *ping_google* konténerek logjait.
 ```bash
 docker logs x_watcher
 docker logs ping_google
@@ -91,14 +93,14 @@ EOF
 chmod 777 data.txt
 ```
 
-Indítsunk konténert volume-ként felcsatolva az elöbb létrehozott *data* könyvtárat,
+Indítsunk konténert volume-ként felcsatolva az előbb létrehozott *data* könyvtárat,
 a /data elérési út alá.
-Módosítsuk nehány fájl tartalmát majd lépjünk ki a konténerből.
+Módosítsuk néhány fájl tartalmát majd lépjünk ki a konténerből.
 
 ```bash
 docker run -v $PWD:/data -ti ubuntu
 ```
-Nezzük meg a fájl tartalmát.
+Nézzük meg a fájl tartalmát.
 
 Indítsunk konténert nevesített volume-ot létrehozva, vagy hozzunk létre nevesített volume-ot
 és indítsunk konténert. A volume neve legyen *my_data* és csatoljuk /data alá.
@@ -112,20 +114,20 @@ Egyik megoldás, első fele:
 docker run -v my_data:/data -ti ubuntu
 ```
 
-Masik megoldás, első fele:
+Másik megoldás, első fele:
 ```bash
 docker volume create my_data
 docker run -v my_data:/data -ti ubuntu
 ```
 
-A megoldas masodik fele
+A megoldás második fele
 ```bash
 docker run -v my_data:/data -ti centos
 ```
 
 Indítsunk konténert névtelen volume-mal, a csatolási pont legyen az előzőkben
 is használt /data. A konténert nevezzük *unnamed_volume*-nak.
-Írjunk néhány fájlt /data-ba, majd zarjuk be a konténert.
+Írjunk néhány fájlt /data-ba, majd zárjuk be a konténert.
 Indítsunk egy másik konténert ugyanezzel a konfigurációval a konténer nevét leszámítva.
 Nézzünk be a /data alá és ne szomorkodjunk.
 Lépjünk ki majd indítsuk újra az *unnamed_volume* konténert, és látogassunk el a
@@ -138,7 +140,7 @@ docker start -ai unnamed_volume
 ```
 
 Nem csak könyvtárak lehetnek volume-ok, hanem fájlok is.
-Csatoljuk be íras védett módban a /etc/passwd fájlt a /etc/passwd alá,
+Csatoljuk be írás védett módban a /etc/passwd fájlt a /etc/passwd alá,
 és állítsuk konténerben lévő user-t
 *cloud*-ra.
 A konténer indítása előtt és után is, adjuk ki a `whoami` illetve az `id` parancsot.
@@ -152,16 +154,16 @@ id
 ```
 
 Ha hibát tapasztalunk, akkor adjuk meg a *cloud* numerikus azonosítóját a neve helyett.
-(Az `id` parancs ezt kiirja).
+(Az `id` parancs ezt kiírja).
 ```bash
 docker run -v /etc/passwd:/etc/passwd:ro --user `id -u` -ti ubuntu
 ```
-Ne felejtsük futtatni a `whoami` és az id parancsokat.
+Ne felejtsük futtatni a `whoami` és az `id` parancsokat.
 
 
 ## A konténer nem virtuális gép
 
-### Root image egyetelen statikusan linkelt programmal.
+### Root image egyetlen statikusan linkelt programmal.
 
 A programkód:
 ```c
@@ -185,16 +187,16 @@ tar cvf hello.tar hello
 docker image import hello.tar
 ```
 
-Az importálás után megjelenik a letrehozott image azonosítója, ezt felhasználva
+Az importálás után megjelenik a létrehozott image azonosítója, ezt felhasználva
 nevezzük át az image-t a `docker tag` parancs segítségével *static_hello*-ra.
 Indítsunk egy static_hello konténert.
-Ne felejtsük el megadni a futattandó program elérési utját!
+Ne felejtsük el megadni a futtatandó program elérési útját!
 
 ### Kernel által nem támogatott funkció igénye a konténerben
 Ritka eset de előfordulhat hogy konténerbe olyan szoftver kerül ami olyan
 funkciót vár el a kerneltől amit nem támogat.
 Konténer egyik előnye hogy hoszt rendszertől különböző linux disztribúciót
-is futathatunk a konténberben.
+is futtathatunk a konténerben.
 Sajnos előfordulhat hogy -- a disztribúciók mivel gyakran különböző verziójú és
 konfigurációjú kernelt használnak -- egyes programok nem működnek.
 
@@ -205,7 +207,7 @@ Készítsünk Dockerfile-t, mely egy Nginx-et telepít.
 A létrejövő image bázis image legyen az *ubuntu* nevű image.
 A teszt weboldal tartalma a *simple_nginx* könyvtárban található,
 ezt Dockerfile-ban másoljuk /var/www/http alá.
-A másolást megelőzően töröljük le az alapértelmezett debianos kezdőoldalt. 
+A másolást megelőzően töröljük le az alapértelmezett debian-os kezdőoldalt. 
 
 A Dockerfile szintaxisáról a [itt](https://docs.docker.com/engine/reference/builder/ "Dockerfile reference")
 találhatunk leírást.
@@ -229,12 +231,17 @@ COPY index.html image.png /var/www/html/
 ENTRYPOINT /usr/sbin/nginx -g "daemon off;"
 ```
 
-Probáljuk ki a Dockerfile-t, a keletkező image-ből indítsunk konténert.
+Próbáljuk ki a Dockerfile-t, a keletkező image-ből indítsunk konténert.
+A `-p` kapcsolóval tehetjük elérhetővé, azaz forward-olhatjuk a konténer
+portjait a hosztgépnek címére. Ezt meg is tekinthetjük az `iptables` nat táblájának
+`DOCKER` nevű chain-jében.
 
 ```bash
 cd simple_nginx
 docker build .
 docker tag XXX simple_nginx
+docker run -d -p80:80 simple_nginx
+sudo iptables -t nat -L
 ```
 
 A konténer tesztelés után, a  `docker inspect` paranccsal vizsgáljuk meg az 
@@ -253,8 +260,9 @@ docker image inspect simple_nginx -f "{{range .RootFS.Layers}}{{.}} {{end}}" \
 diff ubuntu_layers.txt simple_nginx_layers.txt
 ```
 
-Módosítsuk a Dockerfile-t: oldjuk meg hogy az összes lehetséges
-módosítás csak egyetelen layer létrehozását eredményezze!
+Módosítsuk a Dockerfile-t: oldjuk meg hogy az nginx telepítés
+és az alapértelmezett kezdő oldal törlése
+csak egyetlen layer létrehozását eredményezze!
 ```dockerfile
 # Simple Nginx
 #
@@ -285,8 +293,8 @@ szánunk a biztonsági beállításokra.
 A konténerek a virtuális gépekkel szemben rengeteg sok elsőre nem is triviális biztonsági
 rést rejtenek magukban.
 
-Egy egyszerű demonstráció setuid bittel ellátott program hosztrandeszerre jutattása.
-Készítsünk egy egyszerű c programot reallywhoami néven.
+Egy egyszerű demonstráció setuid bittel ellátott program hosztrendszerre juttatása.
+Készítsünk egy egyszerű c programot *reallywhoami* néven.
 ```c
 /* reallywhoami.c */
 #include<unistd.h>
@@ -298,7 +306,7 @@ int main(){
     return 0;
 }
 ```
-Fordítás és futattás:
+Fordítás és futtatás:
 ```bash
 gcc -o reallywhoami reallywhoami.c
 ./reallywhoami
@@ -309,20 +317,20 @@ alá az aktuális munka könyvtárunkat, az indításkor adjuk meg a `--userns=h
 a user namespace kikapcsolásához.
 
 A konténeren belül mivel root lesz a user-ünk,
-vegyük birtokba a *reallywhoami* programot és aggasunk rá **setuid** bitet.
+vegyük birtokba a *reallywhoami* programot és aggassunk rá **setuid** bitet.
 ```bash
 docker run --rm --userns=host -v $PWD:/data -ti ubuntu
 cd /data
 chown root  # tulajdonba vétel
 chmod +s root  # setuid bit beállítása
 ```
-Nyugottan hagyjuk el a konténert és futassuk újra a *reallywhoami* programot.
-Hajajj! Ugye ugye, a konténeren belüli root a hosztrendszeren is root.
+Nyugodtan hagyjuk el a konténert és futtassuk újra a *reallywhoami* programot.
+Hajjaj! Ugye ugye, a konténeren belüli root a hosztrendszeren is root.
 
-Most töröljük le bináris és fordítsuk újra a programot. Ha futatjuk, jól látszik, hogy
+Most töröljük le bináris és fordítsuk újra a programot. Ha futtatjuk, jól látszik, hogy
 ismét helyreállt a rend.
 
-Indítsunk megint egy konténert úgy ahogy az előbb és játszuk el amit az előbb, de
+Indítsunk megint egy konténert úgy ahogy az előbb és játsszuk el amit az előbb, de
 most ne használjuk a `--userns=host` kapcsolót.
 ```bash
 docker run --rm -v $PWD:/data -ti ubuntu
@@ -335,7 +343,7 @@ Nem ijedünk meg!
 Lépjünk ki a konténerből.
 Hozzunk létre könyvtárat *build* néven.
 Másoljuk bele a kódot és a binárist.
-A könyvtárnak adjunk 777-es jogot.
+A könyvtárnak adjunk **777**-es jogot.
 Majd lépjünk is be a könyvtárba.
 ```bash
 mkdir build
@@ -343,7 +351,7 @@ cp reallywhoami reallywhoami.c build
 chmod 777 build
 cd build
 ```
-Futassuk a konténert az előbbi módon, majd belül másoljuk le a *reallywhoami* programot.
+Futtassuk a konténert az előbbi módon, majd belül másoljuk le a *reallywhoami* programot.
 ```bash
 docker run --rm -v $PWD:/data -ti ubuntu
 cd /data
@@ -351,10 +359,10 @@ cp reallywhoami reallywhoami2
 ```
 Nézzük meg a *reallywhoami2* tulajdonosát.
 Tegyük rá a *setuid* bitet.
-Hagyjuk el a konténert és futtasuk a *reallywhoami2* programot.
+Hagyjuk el a konténert és futtassuk a *reallywhoami2* programot.
 Hát ilyenkor szomorkodnak egy pillanatra a hackerek.
 
-Módosítsuk a c porgramot a következőre.
+Módosítsuk a c programot a következőre.
 ```c
 #include<unistd.h>
 #include<stdlib.h>
@@ -365,7 +373,7 @@ int main(){
     return 0;
 }
 ```
-Töröljük a binárisokat fordítsuk újra a programot majd jatszuk el a konténeres trükköt.
+Töröljük a binárisokat fordítsuk újra a programot majd játsszuk el a konténeres trükköt.
 Látszólag nem változott semmi.
 
 Módosítsuk ismét a programot:
@@ -380,28 +388,28 @@ int main(){
     return 0;
 }
 ```
-Játszuk el megint mint az előbb. A konténerből kilépés után futassuk le *reallywhoami2*-t,
-majd nézzük meg a myfile tulajdonosát.
+Játsszuk el megint mint az előbb. A konténerből kilépés után futtassuk le *reallywhoami2*-t,
+majd nézzük meg a *myfile* tulajdonosát.
 
-Igen valóban sikerült egy másik user nevében futatni de ha 100000 feletti user id-kat csak
-a user namespace lekepézéshez használjuk akkor, talán nem lehet vissza élni ezzel.
+Igen valóban sikerült egy másik user nevében futtatni de ha 100000 feletti user id-kat csak
+a user namespace leképezéshez használjuk akkor, talán nem lehet vissza élni ezzel.
 
-Mit csinál a user namespace? Mint ahogy az talán már azlőbbieknél is látszott a konténeren
+Mit csinál a user namespace? Mint ahogy az talán már az előbbieknél is látszott a konténeren
 belüli user id-kat átképzi egy teljesen más user id-ra, a mi esetünkben hozzáad 100000-t.
 Tehát konténeren belüli **X** userid a konténeren kívül a hoszt rendszeren valójában
-a **100000+X** userid. Ez sajnos kihatással van a konténeren belülil műveletekre is
+a **100000+X** userid. Ez sajnos kihatással van a konténeren belüli műveletekre is
 mint ahogy láttuk nem tudtuk tulajdonba venni a 100000 alatti uid-dal rendelkező
-felhasználó fájljait, annak ellenére hogy a konténeren belül látszolag root-ként
+felhasználó fájljait, annak ellenére hogy a konténeren belül látszólag root-ként
 tevékenykedtünk, szerencsére nem.
 
 
 ## Docker API
 
-Készítsünk egy egyszerű webes megjelenitőt a futó konténereink listázására.
+Készítsünk egy egyszerű webes megjelenítőt a futó konténereink listázására.
 A megoldáshoz használjuk a docker python API-ját.
 
 Lépjen be az *api_site* könyvtárba.
-Futassuk az `npm install` parancsot a kliens oldali függőségek telepítéséhez.
+Futtassuk az `npm install` parancsot a kliens oldali függőségek telepítéséhez.
 Majd futtassuk a `sudo pip install -r requirements` parancsot a szerver oldali
 függőségek telepítéséhez.
 A web oldal váza már kész van.
@@ -417,7 +425,7 @@ ebből fog generálódni a weboldal tartalma.
 A *{{ }}* között kell megadnunk a változókat melyek értékéit látni szeretnénk a weboldalon.
 A Jinja template a python szintaxisához hasonlóan támogat:
 elágazásokat, ciklusokat, és függvény hívásokat.
-Az egyszerűség kedvéért az ezen vezérlési szerkezeteket használó kódrészel már adottak.
+Az egyszerűség kedvéért az ezen vezérlési szerkezeteket használó kódrésszel már adottak.
 
 ### Feladat
 
@@ -433,9 +441,9 @@ Módosítsuk a *templates* könyvtárban található *container_list.html* fájl
 találjuk meg és írjuk át a módosítandó részeket.
 
 Sajnos a container objektumok nem tartalmaznak tagváltozóként minden attribútumot.
-A konténerhez tartozó összes attribútum az **attrs** tagváltozóvban található,
+A konténerhez tartozó összes attribútum az **attrs** tagváltozóban található,
 kulcs-érték párok fájaként. 
-A Jinja azonos szintaxissal támogatja a tagváltozok,
+A Jinja azonos szintaxissal támogatja a tagváltozók,
 illetve a kulcs-érték párok hivatkozásait.
 Az **attrs** tagváltozó tartalmának kiderítésében az [itt](https://docs.docker.com/engine/api/v1.28/#operation/ContainerInspect "Docker API - Inspect a container")
 található oldal lehet segítségünkre.
@@ -443,7 +451,7 @@ található oldal lehet segítségünkre.
 
 ### Konténerek metainformációi
 
-A docker lehetőséget add az egyes objektumokhoz metainformációk **label**-ek rendereléséhez.
+A docker lehetőséget add az egyes objektumokhoz metainformációk **label**-ek rendeléséhez.
 A label-ek kulcsérték párok, melyeket a konténerekre a következőképp aggathatunk.
 ```bash
 docker run -l label1key=label1value --label label2key=label2value -ti busybox
@@ -451,13 +459,13 @@ docker run -l label1key=label1value --label label2key=label2value -ti busybox
 A *--label-file* kapcsolóval egy fájlt is megadhatunk ami soronként tartalmazza
 a kulcs-érték párokat.
 
-A web site-unk megjelenití a konténerek szám értékű cimkéit.
-A label-ek kulcsai megjelennek a konténer neve mellett, a kimelési szín és 
+A web site-unk megjeleníti a konténerek szám értékű címkéit.
+A label-ek kulcsai megjelennek a konténer neve mellett, a kiemelési szín és 
 a számérték közti leképezés a *main.py* **map_tag_label** függvényben található.
 
 Próbáljuk ki!
 Indítsunk néhány konténert különböző nevű és értékű label-ökkel.
 
-Indítsunk konténert, hozzá adva az *owner* kulcsú label-t, értkül pedig
+Indítsunk konténert, hozzá adva az *owner* kulcsú label-t, érétkül pedig
 adjunk meg a tulajdonos nevét.
 Oldjuk meg hogy a konténer részleteinél megjelenjen a tulajdonos neve is.
