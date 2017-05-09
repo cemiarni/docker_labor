@@ -2,7 +2,7 @@
 
 ## Docker alapok
 
-Ellenőrizze fut-e a docker démon, amennyiben nem indítsa el.
+Ellenőrizzük fut-e a docker daemon, amennyiben nem indítsuk el.
 
 ```bash
 docker info  # fut-e a demon
@@ -11,12 +11,12 @@ sudo systemctl start docker  # demon inditasa
 
 Legfontosabb parancs: `docker help`.
 
-Töltsön le és indítson egy busybox-os konténert interaktív módban.
-Majd irassa ki a rendszer informaciókat.
-Ellenőrizze a konténerben az internet kapcsolattot.
-Listáztassa ki a hálózati eszközöket.
-Nézze meg a konténer ip címeit.
-Lépjen ki a konténerből.
+Töltsük le és indítsunk egy busybox-os konténert interaktív módban.
+Majd irassuk ki a rendszer informaciókat.
+Ellenőrizzük a konténerben az internet kapcsolattot.
+Listáztassuk ki a hálózati eszközöket.
+Nézzük meg a konténer ip címeit.
+Lépjünk ki a konténerből.
 
 ```bash
 docker run -ti busybox
@@ -27,31 +27,31 @@ ip address
 exit
 ```
 
-Jelenítse meg a futó konténereket.
+Jelenítsük meg a futó konténereket.
 
 ```bash
 docker ps
 ```
 
-Indítson egy busybox konténert a `watch x` paranccsal, detach módban.
+Indítsunk egy busybox konténert a `watch x` paranccsal, detach módban.
 A konténer neve legyen x_watcher.
 
 ```bash
 docker run --name x_watcher -d busybox watch x
 ```
 
-Jelenítse meg ismét a futó konténereket.
-Próbálja ki a `docker ps -a` parancsot.
+Jelenítsük meg ismét a futó konténereket.
+Próbáljuk ki a `docker ps -a` parancsot.
 
 
-Készítsen de ne futasson, egy busybox konténert ami folyamatosan pingeli a google dns szerverét.
-Nevezze `ping_google`-nek.
+Készítsünk de még ne futassuk, egy busybox konténert ami folyamatosan pingeli a google dns szerverét.
+Nevezzük `ping_google`-nek.
 
 ```bash
 docker create --name ping_google busybox ping 8.8.8.8
 ```
 
-Listáztassa ki a konténereket a `docker ps -a` parancssal.
+Listáztassuk ki a konténereket a `docker ps -a` parancssal.
 
 Jelenítsük meg a hosztgép hálózati eszközeit.
 
@@ -152,7 +152,7 @@ id
 ```
 
 Ha hibát tapasztalunk, akkor adjuk meg a *cloud* numerikus azonosítóját a neve helyett.
-(Az id parancs ezt kiirja).
+(Az `id` parancs ezt kiirja).
 ```bash
 docker run -v /etc/passwd:/etc/passwd:ro --user `id -u` -ti ubuntu
 ```
@@ -202,7 +202,7 @@ konfigurációjú kernelt használnak -- egyes programok nem működnek.
 ## Dockerfile
 
 Készítsünk Dockerfile-t, mely egy Nginx-et telepít.
-Oldja meg hogy az összes modosítás csak egyetelen layer létrehozását eredményezze!
+Oldjuk meg hogy az összes modosítás csak egyetelen layer létrehozását eredményezze!
 A weboldal tartalma a simple_nginx könyvtárban található.
 
 ```dockerfile
@@ -269,9 +269,9 @@ chown root  # tulajdonba vétel
 chmod +s root  # setuid bit beállítása
 ```
 Nyugottan hagyjuk el a konténert és futassuk újra a *reallywhoami* programot.
-Hajaj. Ugy ugye, a konténeren belüli root a hosztrendszeren is root.
+Hajajj! Ugye ugye, a konténeren belüli root a hosztrendszeren is root.
 
-Most toroljuk le bináris és fordítsuk újra a programot. Ha futatjuk, jól látszik, hogy
+Most töröljük le bináris és fordítsuk újra a programot. Ha futatjuk, jól látszik, hogy
 ismét helyreállt a rend.
 
 Indítsunk megint egy konténert úgy ahogy az előbb és játszuk el amit az előbb, de
@@ -281,9 +281,9 @@ docker run --rm -v $PWD:/data -ti ubuntu
 cd /data
 chown root
 ```
-Ajha.
+Ajha!
 Nézzük meg a bináris és a /data könyvtár tulajdonosát: `ls -la`.
-Nem ilyedünk meg!
+Nem ijedünk meg!
 Lépjünk ki a konténerből.
 Hozzunk létre könyvtárat *build* néven.
 Másoljuk bele a kódot és a binárist.
@@ -301,12 +301,12 @@ docker run --rm -v $PWD:/data -ti ubuntu
 cd /data
 cp reallywhoami reallywhoami2
 ```
-Nézzük meg a reallywhoami2 tulajdonosát.
+Nézzük meg a *reallywhoami2* tulajdonosát.
 Tegyük rá a *setuid* bitet.
 Hagyjuk el a konténert és futtasuk a *reallywhoami2* programot.
 Hát ilyenkor szomorkodnak egy pillanatra a hackerek.
 
-Modosítsuk a c porgramot a következőre.
+Módosítsuk a c porgramot a következőre.
 ```c
 #include<unistd.h>
 #include<stdlib.h>
@@ -353,15 +353,63 @@ Készítsünk egy egyszerű webes megjelenitőt a futó konténereink listázás
 A megoldáshoz használjuk a docker python API-ját.
 
 Lépjen be az *api_site* könyvtárba.
-Futassa az `npm install` parancsot függőségek telepítéséhez.
+Futassuk az `npm install` parancsot a kliens oldali függőségek telepítéséhez.
+Majd futtassuk a `sudo pip install -r requirements` parancsot a szerver oldali
+függőségek telepítéséhez.
 A web oldal váza már kész van.
 Indítsuk el a fejlesztői szervert és tekintsük meg a félkész weboldalt a 8002-es porton.
 Ezt a `python main.py` parancs kiadásával tehetjük meg.
 
-A **main.py** fájl a webalkalmazás backned-je itt kell elvégeznünk a docker API hívásokat.
+A **main.py** fájl a webalkalmazás backned-je itt kell majd
+elvégeznünk a docker API hívásokat.
+A backend megvalósításához Flask web keretrendszert használjuk.
 
 A templates könyvtárban található **container_list.html** egy Jinja template,
 ebből fog generálódni a weboldal tartalma.
-A *{{ }}* között kell megadnunk a változókat melynek értékéit látni szeretnénk a weboldalon.
-A Jinja támogat elágazásokat ciklusokat és függvény hívásokat.
+A *{{ }}* között kell megadnunk a változókat melyek értékéit látni szeretnénk a weboldalon.
+A Jinja template a python szintaxisához hasonlóan támogat:
+elágazásokat, ciklusokat, és függvény hívásokat.
+Az egyszerűség kedvéért az ezen vezérlési szerkezeteket használó kódrészel már adottak.
 
+### Feladat
+
+Látogassunk el a docker python API dokumentációjához, [ide](https://docker-py.readthedocs.io/en/stable/ "Docker python API docs").
+
+Töröljük ki a *main.py* **container_list** függvényéből a **Dummy** osztályt
+és a **containers** listát.
+Majd kérdezzük le az api segítségével a gépünkön található konténereket.
+Az eredményt töltsük a **containers** változóba.
+Frissítsük be a web oldalt, nézzük meg mi változott.
+
+Módosítsuk a *templates* könyvtárban található *container_list.html* fájlt, 
+találjuk meg és írjuk át a módosítandó részeket.
+
+Sajnos a container objektumok nem tartalmaznak tagváltozóként minden attribútumot.
+A konténerhez tartozó összes attribútum az **attrs** tagváltozóvban található,
+kulcs-érték párok fájaként. 
+A Jinja azonos szintaxissal támogatja a tagváltozok,
+illetve a kulcs-érték párok hivatkozásait.
+Az **attrs** tagváltozó tartalmának kiderítésében az [itt](https://docs.docker.com/engine/api/v1.28/#operation/ContainerInspect "Docker API - Inspect a container")
+található oldal lehet segítségünkre.
+
+
+### Konténerek metainformációi
+
+A docker lehetőséget add az egyes objektumokhoz metainformációk **label**-ek rendereléséhez.
+A label-ek kulcsérték párok, melyeket a konténerekre a következőképp aggathatunk.
+```bash
+docker run -l label1key=label1value --label label2key=label2value -ti busybox
+```
+A *--label-file* kapcsolóval egy fájlt is megadhatunk ami soronként tartalmazza
+a kulcs-érték párokat.
+
+A web site-unk megjelenití a konténerek szám értékű cimkéit.
+A label-ek kulcsai megjelennek a konténer neve mellett, a kimelési szín és 
+a számérték közti leképezés a *main.py* **map_tag_label** függvényben található.
+
+Próbáljuk ki!
+Indítsunk néhány konténert különböző nevű és értékű label-ökkel.
+
+Indítsunk konténert, hozzá adva az *owner* kulcsú label-t, értkül pedig
+adjunk meg a tulajdonos nevét.
+Oldjuk meg hogy a konténer részleteinél megjelenjen a tulajdonos neve is.
