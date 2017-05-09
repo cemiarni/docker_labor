@@ -2,7 +2,7 @@
 
 ## Docker alapok
 
-Ellenőrízze fut-e a docker démon, amennyeben nem indítsa el.
+Ellenőrizze fut-e a docker démon, amennyiben nem indítsa el.
 
 ```bash
 docker info  # fut-e a demon
@@ -12,7 +12,7 @@ sudo systemctl start docker  # demon inditasa
 Legfontosabb parancs: `docker help`.
 
 Töltsön le és indítson egy busybox-os konténert interaktív módban.
-Majd irassa ki a rendszer informaciokat.
+Majd irassa ki a rendszer informaciókat.
 Ellenőrizze a konténerben az internet kapcsolattot.
 Listáztassa ki a hálózati eszközöket.
 Nézze meg a konténer ip címeit.
@@ -68,6 +68,14 @@ docker logs ping_google
 
 Vizsgáljuk meg a konténerekben futó folyamatokat is.
 Tipp: docker top
+
+Nézzük meg a konténerek statisztikáik a `docker stats`-val.
+```bash
+docker stats x_watcher
+docker stats ping_google
+```
+
+Állítsuk le a *ping_google* konténert.
 
 
 ## Volume-ok
@@ -340,3 +348,20 @@ tevékenykedtünk, szerencsére nem.
 
 
 ## Docker API
+
+Készítsünk egy egyszerű webes megjelenitőt a futó konténereink listázására.
+A megoldáshoz használjuk a docker python API-ját.
+
+Lépjen be az *api_site* könyvtárba.
+Futassa az `npm install` parancsot függőségek telepítéséhez.
+A web oldal váza már kész van.
+Indítsuk el a fejlesztői szervert és tekintsük meg a félkész weboldalt a 8002-es porton.
+Ezt a `python main.py` parancs kiadásával tehetjük meg.
+
+A **main.py** fájl a webalkalmazás backned-je itt kell elvégeznünk a docker API hívásokat.
+
+A templates könyvtárban található **container_list.html** egy Jinja template,
+ebből fog generálódni a weboldal tartalma.
+A *{{ }}* között kell megadnunk a változókat melynek értékéit látni szeretnénk a weboldalon.
+A Jinja támogat elágazásokat ciklusokat és függvény hívásokat.
+

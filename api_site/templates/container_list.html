@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Container List</title>
+  <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/static/uikit/dist/css/uikit.min.css" />
+  <script src="/static/jquery/dist/jquery.js"></script>
+  <script src="/static/uikit/dist/js/uikit.min.js"></script>
+</head>
+
+<body>
+<div class="uk-panel uk-padding uk-background-secondary uk-light">
+    <h1><i class="fa fa-server"></i> Containers</h1>
+</div>
+  <div class="uk-panel uk-padding uk-background-primary">
+    <ul uk-accordion="multiple: true">
+    {% for c in containers %}
+      <li class="uk-background-default">
+        <h3 class="uk-accordion-title uk-padding">
+          <i class="fa {{ map_status_icon(c.status) }} fa-lg uk-margin-right"></i>
+          {{ konténer név }} <i class="uk-text-meta uk-margin-left uk-margin-right">{{ konténer rövid azonostója }}</i>
+          {% for tag, priority in c.attrs.Config.Labels.items() %}
+            {% if is_tag(priority) %}
+              <span class="uk-label {{ map_tag_label(priority) }}">{{ tag }}</span>
+            {% endif %}
+          {% endfor %}
+        </h3>
+        <div class="uk-accordion-content uk-background-muted">
+          <div class="uk-padding">
+            <ul class="uk-list uk-list-divider">
+             <li>
+               Id: {{ konténer hosszú azonostója }}
+             </li>
+             <li>
+               Created: {{ format_date(c.attrs.Created) }}
+             </li>
+             <li>
+               Command: {{ c.attrs.Path }}
+               {% for arg in c.attrs.Args %}
+                 {{ arg }}
+               {% endfor %}
+             </li>
+             <li>
+               Status: {{ konténer állapota }}
+             </li>
+             <li>
+               Hostname: {{ konténer hosztneve }}
+             </li>
+             <li>
+               IP: {{ konténer ip címe }}
+             </li>
+             <li>
+               MAC: {{ konténer mac címe }}
+             </li>
+             <li>
+               Image: {{ image neve }}
+             </li>
+             <li>
+               Owner: {{ owner cimke }}
+             </li>
+           </ul>
+          </div>
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>
