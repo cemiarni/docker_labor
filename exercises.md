@@ -202,24 +202,31 @@ konfigurációjú kernelt használnak -- egyes programok nem működnek.
 ## Dockerfile
 
 Készítsünk Dockerfile-t, mely egy Nginx-et telepít.
-Oldjuk meg hogy az összes modosítás csak egyetelen layer létrehozását eredményezze!
-A weboldal tartalma a simple_nginx könyvtárban található.
+A létrejövő image bázis image legyen az *ubuntu* nevű image.
+A teszt weboldal tartalma a *simple_nginx* könyvtárban található,
+ezt Dockerfile-ban másoljuk /var/www/http alá.
+A másolást megelőzően töröljük le az alapértelmezett debianos kezdőoldalt. 
 
+A Dockerfile szintaxisáról a [itt](https://docs.docker.com/engine/reference/builder/ "Dockerfile reference")
+találhatunk leírást.
+
+Az egyszerűség kedvéért használjuk az alábbi kódot.
+Amit a *simple_nginx* könyvtárban helyezzünk el **Dockerfile** néven.
 ```dockerfile
-# Nginx
+# Simple Nginx
 #
 # VERSION       1.0
 
 FROM ubuntu
 MAINTAINER okos hallgató
 
-RUN apt update \
-    && apt install -y nginx \
-    && rm -f /var/www/html/index.nginx-debian.html
+RUN apt update
+RUN apt install -y nginx
+RUN rm -f /var/www/html/index.nginx-debian.html
 
-COPY simple_nginx/* /var/www/html
+COPY index.html image.png /var/www/html/
 
-ENTRYPOINT /etc/init.d/nginx start
+ENTRYPOINT /usr/sbin/nginx -g "daemon off;"
 ```
 
 Probáljuk ki a Dockerfile-t, a keletkező image-ből indítsunk konténert.
@@ -230,7 +237,48 @@ docker build .
 docker tag XXX simple_nginx
 ```
 
-# Biztonság
+A konténer tesztelés után, a  `docker inspect` paranccsal vizsgáljuk meg az 
+*ubuntu* image layer-eit.
+Majd vizsgáljuk meg a *simple_nginx* image-ben is őket.
+Hasonlítsuk össze a két listát.
+```bash
+docker image inspect ubuntu -f "{{range .RootFS.Layers}}{{.}} {{end}}" \
+| tr ' ' '\n' \
+| tee ubuntu_layers.txt
+
+docker image inspect simple_nginx -f "{{range .RootFS.Layers}}{{.}} {{end}}" \
+| tr ' ' '\n' \
+| tee simple_nginx_layers.txt
+
+diff ubuntu_layers.txt simple_nginx_layers.txt
+```
+
+Módosítsuk a Dockerfile-t: oldjuk meg hogy az összes lehetséges
+módosítás csak egyetelen layer létrehozását eredményezze!
+```dockerfile
+# Simple Nginx
+#
+# VERSION       1.1
+
+FROM ubuntu
+MAINTAINER okos hallgató
+
+RUN apt update \
+    && apt install -y nginx \
+    && rm -f /var/www/html/index.nginx-debian.html
+
+COPY index.html image.png /var/www/html/
+
+ENTRYPOINT /usr/sbin/nginx -g "daemon off;"
+
+```
+A generált image kapja a *simple_nginx2* nevet.
+
+Az előzőleg használt módszerrel hasonlítsuk össze a *simple_nginx* és a *simple_nginx2*
+image-k layer-eit.
+
+
+## Biztonság
 
 Ha konténereket kívánunk szolgáltatni az ügyfeleink számára akkor nagy figyelmet kell
 szánunk a biztonsági beállításokra.
