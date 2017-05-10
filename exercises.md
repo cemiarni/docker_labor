@@ -1,5 +1,12 @@
 # Konténer technológiák laboratórium
 
+Klónozzuk le a https://github.com/cemiarni/docker_labor.git repository-t.
+Majd lépjünk a *docker_labor* könyvtárba, és végig dolgozzunk ott.
+```bash
+git clone https://github.com/cemiarni/docker_labor.git
+cd labor_git
+```
+
 ## Docker alapok
 
 Ellenőrizzük fut-e a docker daemon, amennyiben nem indítsuk el.
