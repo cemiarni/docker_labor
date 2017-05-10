@@ -469,3 +469,130 @@ Indítsunk néhány konténert különböző nevű és értékű label-ökkel.
 Indítsunk konténert, hozzá adva az *owner* kulcsú label-t, érétkül pedig
 adjunk meg a tulajdonos nevét.
 Oldjuk meg hogy a konténer részleteinél megjelenjen a tulajdonos neve is.
+
+
+## Swarm cluster
+
+A következőekben egy Docker Swarm cluster-r fogunk összerakni.
+Ehhez három gépre lesz szükségünk.
+Az egyik amin eddig dolgoztunk, ezt nevezzuk *manager*-nek.
+Célszerű a hosztnevét is átállítani a könnyebb tájékozódás érdekében.
+A másik két gép a *worker1* és a *worker2*.
+
+A manager gépen adjuk ki a következő parancsokat a docker démon swarm módba léptetéséhez.
+```bash
+sudo sh -c "echo manager >/etc/hostname"  # hosztnév beállítás első lépés
+sudo hostname manager  # hosztnév beállítás mádosik lépés
+docker swarm init --advertise-addr a_gep_ip_cime  # 'ip address' parancs segít
+```
+A manager gép ezennel manager üzemmódba lépett.
+A megjelenő parancsot futtassuk a két worker gépen.
+Ha minden jól sikerült akkor a következő üzenet fogad minket: *This node joined a swarm as a worker.*
+Majd állítsuk be a workerek hosztneveit is.
+
+A `docker info` paranccsal az eddigekhez képest plusz információkat kaphatunk a docker daemon-ról, mert most már
+swarm módban van.
+
+A cluster-ben lévő gépket és ezek állapotát a `docker node list` parancs segítségével tekinthetjük meg.
+
+Az első service-ünk elkészítéséhez adjuk ki az alábbi parancsot, ami egy példányba indít konténert
+valamely a cluster-ben résztvevő node-on.
+```bash
+docker service create --replicas 1 --name my_first_service busybox ping 8.8.8.8
+```
+
+A létrehozott service-ket a `docker service ls` paranccsal listáztathatjuk.
+A service-kről többlet információt a `docker service inspect service_név` paranccsal kaphatunk..
+A service-hez tartozó konténereket a `docker service ps service_név` kiadásával kapjuk,
+ahol látszik a konténer neve, állapota és hogy melyik gépen fut.
+
+Állítsuk a manager node-ot `DRAIN` állapotba, az az tiltsuk meg rajta a servicek általi konténer futtatást.
+```bash
+docker node update --availability drain manager
+```
+
+Nézzük meg a service-ünkhöz tartozó futó konténereket.
+```bash
+docker service ps my_first_service
+```
+A kimeneten jól látszik hogy manager-en leállt a konténer és elindult egy másik node-on.
+
+Töröljük a service-ünket.
+És ellenőrizzük hogy törlödtek-e a konténerek.
+```bash
+docker service rm my_first_service
+```
+
+Készítsünk egy service-t *replicated_service* néven.
+Állítsuk be a replikációt 2-re és forward-oljuk a 80-as portot.
+A swarm cluster automatikusan proxy-zza a kéréseinket a konténerek felé.
+Konténerek használják a *simple_nginx* image-t!
+```bash
+docker service create \
+  --name replicated_service \
+  --publish 80:80 \
+  --replicas 2 \
+  simple_nginx
+```
+Sajnos nem indultak el konténereink, mivel az image csak a manager gépen létezik.
+Ezt a tényt a `docker service ps replicated_service` kiadásával figyelhetjük meg.
+
+Oldjuk meg a feladatot másképp: használjuk a Docker HUB-on elérhető *nginx* image-t.
+Frissítsük az `update` alparanccsal a a service-t úgy hogy az említett image-t használja
+és csatoljuk be a **simple_nginx** könyvtárat a */usr/share/nginx/html* elérési út alá
+írásvédett módban.
+Ez még sajnos nem elég a működéshez mert nincs mindegyik node-on a **simple_nginx** könyvtár.
+Az egyszerűség kedvéért klónozzuk le minden node-ra a labor projektet.
+Adjunk belepési jogot a home könyvtárba mindegyik node-on a `chmod 701 ~` kiadásával.
+
+Most már futtathatjuk a service frissítést!
+```bash
+docker service update --image nginx --mount-add type=bind,src=/home/cloud/docker_labor/simple_nginx,dst=/usr/share/nginx/html,readonly replicated_service
+
+docker ps replicated_service  # ellenőrizzük hogy elindult-e
+```
+
+**Kitérő**: a weboldal fájljainak megosztását szebben is meg lehetne oldani, ha mondjuk használunk valamilyen hálózati
+megosztást a node-ok között.
+Ez lehetne NFS megosztás, vagy minden node-ra felcsatolt Ceph RBD, vagy CephFS, stb.
+Vagy használhatnánk ilyen megoldásokra épülő docker volume drivert is.
+Az érdeklődők kedvükre válogathatnak [ebből](https://docs.docker.com/engine/extend/legacy_plugins/#volume-plugins "Docker Volume plugins")
+a listából, vagy írhatnak saját driver-t.
+
+A ellenőrizzük a böngészőben is, hogy mind a három node ip címén bejön-e a weboldal.
+Hogy el is higgyük a manager gépen tényleg nem fut konténer futtassak mind három node-on
+a `docker ps` parancsot.
+
+### High Availability teszt
+
+Nem várt leállást szimulálva altassuk le a *worker1* gépet.
+Majd ellenőrizzük a weboldal elérését.
+Egy kevés idő kellhet mire a Docker észbe kap, de utána látszik hogy kívülről tekintve helyreállt a rend.
+A ha megnézzük a futó konténereket látszik hogy a *worker2*-ön két konténer fut.
+
+Ébresszük fel a *worker1*-et és ellenőrizzük hogy elindult-e rajta a konténer.
+Sajnos nem, de a `docker service update --force replicated_service` paranccsal újra tudjuk skálázni a rendszert.
+
+Végezzük el újra a teljes tesztet úgy hogy előtte át állítjuk a service replikációját 1-re.
+
+További információ a Docker Swarm-ról [itt](https://docs.docker.com/engine/swarm/ "Docker Swarm") található.
+
+
+### Izolált hálózatok kitérő
+
+Ha több ügyfelünk van és szeretnénk a az egyes ügyfelek hálózati forgalmát elszeparálni egymástól,
+hogy az adott ügyfél csak a saját konténereivel tudjon kommunikálni, vagy ne tudja zavarni
+más ügyfelek konténereit, akkor használhatunk overlay network-öt vagy Calico-t.
+
+Az overlay network az előadáson bemutatott VXLAN megoldást használja a node-ok között.
+A Calico szintén ismertetésre került az előadáson.
+
+
+## Játék
+
+Megérdemeljük a pihenést nézzünk meg egy youtube videót a dockercraft-ról,
+ami futó konténereinket és róluk információkat vizualizál minecraft-ban.
+Mind emellett pár művelet is elvégezhető a konténereken játék közben.
+
+[![Dockercraft](http://img.youtube.com/vi/eZDlJgJf55o/0.jpg)](http://www.youtube.com/watch?v=eZDlJgJf55o "Youtube - Dockercraft")
+A képre kattintás a youtube-ra navigál.
