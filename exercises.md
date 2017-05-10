@@ -330,6 +330,8 @@ Hajjaj! Ugye ugye, a konténeren belüli root a hosztrendszeren is root.
 Most töröljük le bináris és fordítsuk újra a programot. Ha futtatjuk, jól látszik, hogy
 ismét helyreállt a rend.
 
+![Docker Security artwork](security.png)
+
 Indítsunk megint egy konténert úgy ahogy az előbb és játsszuk el amit az előbb, de
 most ne használjuk a `--userns=host` kapcsolót.
 ```bash
