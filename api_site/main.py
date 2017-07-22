@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import dateutil.parser
+from unittest.mock import MagicMock
 
 app = Flask(__name__)
 
@@ -58,11 +59,7 @@ def add_custom_processors():
 # Handler for url /
 @app.route("/")
 def container_list():
-    class Dummy:
-        def __getattr__(*args):return Dummy()
-        def __getitem__(*args):raise IndexError
-        def __call__(*args):return []
-    containers = [Dummy() for _ in range(1,10)]  # List of containers
+    containers = [MagicMock()] * 10  # List of containers
     return render_template("container_list.html", containers=containers)
 
 

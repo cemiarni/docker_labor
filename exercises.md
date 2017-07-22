@@ -416,7 +416,7 @@ tevékenykedtünk, szerencsére nem.
 Készítsünk egy egyszerű webes megjelenítőt a futó konténereink listázására.
 A megoldáshoz használjuk a docker python API-ját.
 
-Lépjen be az *api_site* könyvtárba.
+Lépjünk be az *api_site* könyvtárba.
 Futtassuk az `npm install` parancsot a kliens oldali függőségek telepítéséhez.
 Majd futtassuk a `sudo pip install -r requirements` parancsot a szerveroldali
 függőségek telepítéséhez.
@@ -439,11 +439,10 @@ Az egyszerűség kedvéért az ezen vezérlési szerkezeteket használó kódré
 
 Látogassunk el a docker python API dokumentációjához, [ide](https://docker-py.readthedocs.io/en/stable/ "Docker python API docs").
 
-Töröljük ki a *main.py* **container_list** függvényéből a **Dummy** osztályt
-és a **containers** listát.
+Töröljük ki a *main.py* **container_list** függvényéből a **containers** listát.
 Majd kérdezzük le az API segítségével a gépünkön található konténereket.
 Az eredményt töltsük a **containers** változóba.
-Frissítsük be a web oldalt, nézzük meg mi változott.
+Frissítsük a weboldalt, nézzük meg mi változott.
 
 Módosítsuk a *templates* könyvtárban található *container_list.html* fájlt, 
 találjuk meg, és írjuk át a módosítandó részeket.
