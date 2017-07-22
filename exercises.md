@@ -186,6 +186,7 @@ Fordítás:
 ```bash
 gcc -static -o hello hello.c
 ```
+Figyelem! A forditáshoz szükségünk van a C könyvtár statikus változatára, ezért ha a fordító panaszkodik, akkor telepítsük fel azt a csomagkezelővel.
 
 Archiválás és image készítés:
 ```bash
@@ -198,7 +199,7 @@ nevezzük át az image-t a `docker tag` parancs segítségével *static_hello*-r
 Indítsunk egy static_hello konténert.
 Ne felejtsük el megadni a futtatandó program elérési útját!
 
-### Kernel által nem támogatott funkció igénye a konténerben
+### A kernel által nem támogatott funkció igénye a konténerben
 Ritka eset de előfordulhat hogy konténerbe olyan szoftver kerül, ami a kerneltől
 az az által nem támogatott funkciókat igényelne.
 Konténer egyik előnye hogy hoszt rendszertől különböző linux disztribúciót
